@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2563eb">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apontech | Comprobante Digital</title>
+ 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+ 
+<style>
+<script>
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("service-worker.js");
+}
+</script>
+
+
+body{
+  margin:0;
+  padding:16px;
+  font-family: Inter, system-ui, sans-serif;
+  background:#ffffff;
+  color:#0f172a;
+}
+.container{max-width:600px;margin:auto;}
+.logo{display:block;margin:0 auto 10px;max-width:180px;}
+h1{text-align:center;font-size:22px;margin-bottom:20px;}
+ 
+.card{
+  background:#fff;
+  border-radius:16px;
+  padding:16px;
+  margin-bottom:16px;
+  box-shadow:0 8px 20px rgba(0,0,0,.08);
+}
+ 
+label{font-size:14px;font-weight:600;}
+input,textarea{
+  width:100%;
+  margin-top:6px;
+  padding:12px;
+  border-radius:12px;
+  border:1px solid #e5e7eb;
+  font-size:15px;
+}
+ 
+canvas{
+  width:100%;
+  height:180px;
+  border-radius:12px;
+  border:1px dashed #cbd5f5;
+  background:#f8fafc;
+  touch-action:none;
+}
+ 
+button{
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:14px;
+  background:linear-gradient(135deg,#2563eb,#22c55e);
+  color:#fff;
+  font-size:16px;
+  font-weight:600;
+  margin-top:8px;
+}
+ 
+.secondary{background:#64748b;}
+.danger{background:#ef4444;}
+ 
+.small{text-align:center;font-size:12px;color:#64748b;margin-top:6px;}
+.footer{text-align:center;font-size:13px;color:#475569;margin-top:20px;}
+</style>
+</head>
+ 
+<body>
+ 
+<div class="container">
+ 
+<img src="logo.png" class="logo">
+ 
+<h1>Comprobante Digital de Servicio</h1>
+ 
+<div class="card">
+  <label>Nombre del Técnico / Conductor</label>
+  <input id="driver">
+ 
+  <label style="margin-top:12px;">Dirección del Servicio</label>
+  <textarea id="address" rows="3"></textarea>
+</div>
+ 
+<div class="card">
+  <label>Fotos del Servicio</label>
+ 
+  <!-- CAMARA -->
+  <input type="file" id="cameraInput" accept="image/*" capture="environment" hidden>
+  <button class="secondary" onclick="cameraInput.click()">📷 Tomar fotos</button>
+ 
+  <!-- GALERIA -->
+  <input type="file" id="galleryInput" accept="image/*" multiple hidden>
+  <button class="secondary" onclick="galleryInput.click()">🖼️ Elegir desde galería</button>
+ 
+  <div class="small" id="photoCount">0 fotos seleccionadas</div>
+</div>
+ 
+<div class="card">
+  <label>Firma del Cliente</label>
+  <canvas id="signature"></canvas>
+  <button class="danger" onclick="clearSig()">Limpiar firma</button>
+</div>
+ 
+<div class="card">
+  <button onclick="generatePDF()">📄 Generar PDF</button>
+</div>
+ 
+<div class="footer">
+  📞 849-873-1728 | 809-916-6031<br>
+  ✉️ apontechgs@gmail.com
+</div>
+ 
+</div>
+ 
+<script>
+const canvas = document.getElementById("signature");
+const ctx = canvas.getContext("2d");
+let drawing = false;
+let images = [];
+ 
+function resize(){
+  canvas.width = canvas.offsetWidth;
+  canvas.height = 180;
+}
+resize();
+window.onresize = resize;
+ 
+canvas.addEventListener("pointerdown", e => {
+  drawing = true;
+  ctx.beginPath();
+  ctx.moveTo(e.offsetX, e.offsetY);
+});
+canvas.addEventListener("pointermove", e => {
+  if(!drawing) return;
+  ctx.lineWidth = 2.5;
+  ctx.lineCap = "round";
+  ctx.strokeStyle = "#2563eb";
+  ctx.lineTo(e.offsetX, e.offsetY);
+  ctx.stroke();
+});
+canvas.addEventListener("pointerup", () => drawing = false);
+ 
+function clearSig(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+}
+ 
+cameraInput.onchange = galleryInput.onchange = e => {
+  for(let file of e.target.files){
+    images.push(file);
+  }
+  document.getElementById("photoCount").innerText =
+    `${images.length} fotos seleccionadas`;
+};
+ 
+async function generatePDF(){
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF();
+
+  const now = new Date().toLocaleString();
+  const numero = "APT-" + Date.now().toString().slice(-6);
+
+  /* ENCABEZADO */
+  pdf.addImage("logo.png","PNG",15,10,40,20);
+  pdf.setFontSize(16);
+  pdf.text("APONTECH GLOBAL SOLUTIONS",105,18,{align:"center"});
+  pdf.setFontSize(12);
+  pdf.text("REPORTE DE SERVICIO",105,26,{align:"center"});
+  pdf.line(10,32,200,32);
+
+  /* DATOS */
+  pdf.rect(10,38,190,32);
+  pdf.setFontSize(11);
+  pdf.text(`Comprobante: ${numero}`,15,46);
+  pdf.text(`Fecha y hora: ${now}`,15,54);
+  pdf.text(`Técnico: ${driver.value}`,110,46);
+  pdf.text("Dirección:",110,54);
+  pdf.text(address.value,110,60,{maxWidth:85});
+
+  /* FOTOS */
+  let y = 86;
+  let x = 15;
+  let col = 0;
+
+  pdf.setFontSize(13);
+  pdf.text("EVIDENCIAS",10,78);
+
+  for(const file of images){
+    const img = await read(file);
+
+    pdf.addImage(img,"JPEG",x,y,80,55);
+
+    col++;
+    if(col === 2){
+      col = 0;
+      x = 15;
+      y += 60;
+    } else {
+      x = 110;
+    }
+
+    if(y > 220){
+      pdf.addPage();
+      y = 20;
+      x = 15;
+    }
+  }
+
+  /* FIRMA */
+  if(y > 160){
+    pdf.addPage();
+    y = 20;
+  }
+
+  pdf.setFontSize(13);
+  pdf.text("FIRMA DEL CLIENTE",10,y);
+  pdf.addImage(canvas.toDataURL(),"PNG",15,y+12,90,40);
+  pdf.line(15,y+50,105,y+50);
+  pdf.setFontSize(11);
+  pdf.text("Firma y conformidad",15,y+58);
+
+  /* PIE */
+  pdf.setFontSize(10);
+  pdf.line(10,280,200,280);
+  pdf.text("Apontech Global Solutions | 849-873-1728 | apontechgs@gmail.com",105,287,{align:"center"});
+
+  /* COMPARTIR */
+  const blob = pdf.output("blob");
+  const file = new File([blob], "Reporte_Apontech.pdf", { type: "application/pdf" });
+
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    await navigator.share({
+      files: [file],
+      title: "Reporte de Servicio Apontech",
+      text: "Adjunto reporte técnico del servicio realizado"
+    });
+  } else {
+    pdf.save("Reporte_Apontech.pdf");
+  }
+}
+
+ 
+function read(file){
+  return new Promise(res=>{
+    const r = new FileReader();
+    r.onload = () => res(r.result);
+    r.readAsDataURL(file);
+  });
+}
+</script>
+ 
+</body>
+</html>
