@@ -87,12 +87,28 @@ button{
   <label>Service Photos</label>
 
   <input type="file" id="cameraInput" accept="image/*" capture="environment" hidden>
-  <button class="secondary" onclick="cameraInput.click()">📷Take Photos</button>
+  <button class="secondary" onclick="cameraInput.click()">?? Take Photos</button>
 
   <input type="file" id="galleryInput" accept="image/*" multiple hidden>
-  <button class="secondary" onclick="galleryInput.click()">🖼️Choose from Gallery</button>
+  <button class="secondary" onclick="galleryInput.click()">??? Choose from Gallery</button>
 
   <div class="small" id="photoCount">0 photos selected</div>
+</div>
+
+<!-- ? CHECKLIST -->
+<div class="card">
+  <label>Service Checklist</label>
+
+  <strong>Areas</strong><br>
+  <input type="checkbox" id="bathroom"> Bathroom<br>
+  <input type="checkbox" id="living"> Living Room<br>
+  <input type="checkbox" id="kitchen"> Kitchen<br>
+  <input type="checkbox" id="bedroom"> Bedroom<br><br>
+
+  <strong>Service Type</strong><br>
+  <input type="checkbox" id="repair"> Repair<br>
+  <input type="checkbox" id="glass"> Glass Work<br>
+  <input type="checkbox" id="install"> Installation
 </div>
 
 <div class="card">
@@ -159,17 +175,12 @@ async function generatePDF(){
   const now = new Date().toLocaleString();
   const number = "GMB-" + Date.now().toString().slice(-6);
 
-  
-  /* ENCABEZADO */
-  
   pdf.addImage("logo.png","PNG",15,10,40,20);
   pdf.setFontSize(16);
   pdf.text("GMB WINDOW & BATHUB COMPANY",105,18,{align:"center"});
   pdf.setFontSize(12);
   pdf.text("SERVICE REPORT",105,26,{align:"center"});
   pdf.line(10,32,200,32);
-  
-/* DATE */
 
   pdf.rect(10,38,190,32);
   pdf.setFontSize(11);
@@ -179,78 +190,89 @@ async function generatePDF(){
   pdf.text("Address:",110,54);
   pdf.text(address.value,110,60,{maxWidth:85});
 
- /* PHOTOS*/
-let y = 86;
-let x = 15;
-let col = 0;
+  let y = 86;
+  let x = 15;
+  let col = 0;
 
-pdf.setFontSize(13);
-pdf.text("EVIDENCE",10,78);
+  pdf.setFontSize(13);
+  pdf.text("EVIDENCE",10,78);
 
-for (let i = 0; i < images.length; i++) {
+  for (let i = 0; i < images.length; i++) {
+    const img = await read(images[i]);
 
-  const img = await read(images[i]);
+    if (y > 215) {
+      pdf.addPage();
+      y = 20;
+      x = 15;
+      col = 0;
+    }
 
-  if (y > 215) {
+    pdf.addImage(img, "JPEG", x, y, 80, 55);
+
+    if (col === 0) {
+      x = 110;
+      col = 1;
+    } else {
+      x = 15;
+      col = 0;
+      y += 60;
+    }
+  }
+
+  if (col === 1) y += 60;
+
+  if(y > 180){
     pdf.addPage();
     y = 20;
-    x = 15;
-    col = 0;
   }
 
-  pdf.addImage(img, "JPEG", x, y, 80, 55);
+  /* ? CHECKLIST IN PDF */
+  pdf.setFontSize(13);
+  pdf.text("SERVICE DETAILS",10,y);
+  y += 8;
 
-  if (col === 0) {
-    x = 110;
-    col = 1;
-  } else {
-    x = 15;
-    col = 0;
-    y += 60;
+  pdf.setFontSize(11);
+  function mark(t,c){ pdf.text(`${c?"?":"?"} ${t}`,15,y); y+=7; }
+
+  mark("Bathroom", bathroom.checked);
+  mark("Living Room", living.checked);
+  mark("Kitchen", kitchen.checked);
+  mark("Bedroom", bedroom.checked);
+
+  y+=5;
+
+  mark("Repair", repair.checked);
+  mark("Glass Work", glass.checked);
+  mark("Installation", install.checked);
+
+  y+=10;
+
+  if(y > 160){
+    pdf.addPage();
+    y = 20;
   }
-}
 
-/* SI QUEDA FOTO EN MEDIA FILA */
-if (col === 1) y += 60;
+  pdf.setDrawColor(40,150,80);
+  pdf.roundedRect(12, y, 186, 32, 4, 4);
+  pdf.setFontSize(12);
+  pdf.text("Service Completed Successfully",105,y+10,{align:"center"});
+  pdf.setFontSize(10);
+  pdf.text("Thank you for trusting our professional team.",105,y+18,{align:"center"});
+  pdf.text("We appreciate your business and look forward to serving you again.",105,y+26,{align:"center"});
 
+  y+=42;
 
-if(y > 180){
-  pdf.addPage();
-  y = 20;
-}
+  if(y > 160){
+    pdf.addPage();
+    y = 20;
+  }
 
-/* MSG */
-
-pdf.setDrawColor(40,150,80);
-pdf.setLineWidth(0.8);
-pdf.roundedRect(12, y, 186, 32, 4, 4);
-
-pdf.setFontSize(12);
-pdf.text("Service Completed Successfully",105,y+10,{align:"center"});
-
-pdf.setFontSize(10);
-pdf.text("Thank you for trusting our professional team.",105,y+18,{align:"center"});
-pdf.text("We appreciate your business and look forward to serving you again.",105,y+26,{align:"center"});
-
-y += 42;
-
-/* Signature */
-if(y > 160){
-  pdf.addPage();
-  y = 20;
-}
-
-	pdf.setFontSize(13);
   pdf.addImage(canvas.toDataURL(),"PNG",15,y+12,90,40);
   pdf.line(15,y+50,105,y+50);
-  pdf.setFontSize(11);
   pdf.text("CUSTOMER SIGNATURE",15,y+58);
 
-  
-  /* PIE */
-  pdf.setFontSize(10);
   pdf.line(10,280,200,280);
-  pdf.text("GMB Window & Bathub Company | +1 (646) 671-6849 | ✉️Gemibrand@gmail.com",105,287,{align:"center"});
+  pdf.text("GMB Window & Bathub Company | +1 (646) 671-6849 | Gemibrand@gmail.com",105,287,{align:"center"});
 
   const blob = pdf.output("blob");
   const file = new File([blob], "GMB_Service_Report.pdf", { type: "application/pdf" });
