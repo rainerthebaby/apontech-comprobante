@@ -90,4 +90,239 @@ button{
   <button class="secondary" onclick="cameraInput.click()">?? Take Photos</button>
 
   <input type="file" id="galleryInput" accept="image/*" multiple hidden>
-  <bu
+  <button class="secondary" onclick="galleryInput.click()">??? Choose from Gallery</button>
+
+  <div class="small" id="photoCount">0 photos selected</div>
+</div>
+
+<!-- ? DYNAMIC SERVICE LINES -->
+<div class="card">
+  <label>Service Performed</label>
+
+  <div id="serviceLines"></div>
+
+  <button class="secondary" onclick="addLine()">? Add Service Line</button>
+</div>
+
+<div class="card">
+  <label>Customer Signature</label>
+  <canvas id="signature"></canvas>
+  <button class="danger" onclick="clearSig()">Clear Signature</button>
+</div>
+
+<div class="card">
+  <button onclick="generatePDF()">Generate PDF</button>
+</div>
+
+<div class="footer">
+GMB Window & Bathub Company<br>
+Phone: +1 (646) 671-6849<br>
+Email: Gemibrand@gmail.com
+</div>
+
+</div>
+
+<script>
+const canvas = document.getElementById("signature");
+const ctx = canvas.getContext("2d");
+let drawing = false;
+let images = [];
+
+function resize(){
+  canvas.width = canvas.offsetWidth;
+  canvas.height = 180;
+}
+resize();
+window.onresize = resize;
+
+canvas.addEventListener("pointerdown", e => {
+  drawing = true;
+  ctx.beginPath();
+  ctx.moveTo(e.offsetX, e.offsetY);
+});
+canvas.addEventListener("pointermove", e => {
+  if(!drawing) return;
+  ctx.lineWidth = 2.5;
+  ctx.lineCap = "round";
+  ctx.strokeStyle = "#2563eb";
+  ctx.lineTo(e.offsetX, e.offsetY);
+  ctx.stroke();
+});
+canvas.addEventListener("pointerup", () => drawing = false);
+
+function clearSig(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+}
+
+cameraInput.onchange = galleryInput.onchange = e => {
+  for(let file of e.target.files){
+    images.push(file);
+  }
+  photoCount.innerText = `${images.length} photos selected`;
+};
+
+/* ? ADD SERVICE LINE */
+function addLine(){
+  const row = document.createElement("div");
+  row.style.display = "flex";
+  row.style.gap = "8px";
+  row.style.marginTop = "8px";
+
+  row.innerHTML = `
+    <select class="area">
+      <option value="">Area</option>
+      <option>Bathroom</option>
+      <option>Living Room</option>
+      <option>Kitchen</option>
+      <option>Bedroom</option>
+    </select>
+
+    <select class="service">
+      <option value="">Service</option>
+      <option>Repair</option>
+      <option>Glass Work</option>
+      <option>Installation</option>
+    </select>
+
+    <button class="danger" onclick="this.parentElement.remove()">?</button>
+  `;
+
+  serviceLines.appendChild(row);
+}
+
+async function generatePDF(){
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF();
+
+  const now = new Date().toLocaleString();
+  const number = "GMB-" + Date.now().toString().slice(-6);
+
+  pdf.addImage("logo.png","PNG",15,10,40,20);
+  pdf.setFontSize(16);
+  pdf.text("GMB WINDOW & BATHUB COMPANY",105,18,{align:"center"});
+  pdf.setFontSize(12);
+  pdf.text("SERVICE REPORT",105,26,{align:"center"});
+  pdf.line(10,32,200,32);
+
+  pdf.rect(10,38,190,32);
+  pdf.setFontSize(11);
+  pdf.text(`Report #: ${number}`,15,46);
+  pdf.text(`Date & Time: ${now}`,15,54);
+  pdf.text(`Technician: ${driver.value}`,110,46);
+  pdf.text("Address:",110,54);
+  pdf.text(address.value,110,60,{maxWidth:85});
+
+  let y = 86;
+  let x = 15;
+  let col = 0;
+
+  pdf.setFontSize(13);
+  pdf.text("EVIDENCE",10,78);
+
+  for (let i = 0; i < images.length; i++) {
+    const img = await read(images[i]);
+
+    if (y > 215) {
+      pdf.addPage();
+      y = 20;
+      x = 15;
+      col = 0;
+    }
+
+    pdf.addImage(img, "JPEG", x, y, 80, 55);
+
+    if (col === 0) {
+      x = 110;
+      col = 1;
+    } else {
+      x = 15;
+      col = 0;
+      y += 60;
+    }
+  }
+
+  if (col === 1) y += 60;
+
+  if(y > 180){
+    pdf.addPage();
+    y = 20;
+  }
+
+  /* ? SERVICE TABLE */
+  pdf.setFontSize(13);
+  pdf.text("SERVICE DETAILS",10,y);
+  y += 8;
+
+  pdf.setFontSize(11);
+  pdf.text("Area",15,y);
+  pdf.text("Service Performed",80,y);
+  y += 5;
+  pdf.line(15,y,190,y);
+  y += 6;
+
+  const areas = document.querySelectorAll(".area");
+  const services = document.querySelectorAll(".service");
+
+  for(let i=0;i<areas.length;i++){
+    if(!areas[i].value || !services[i].value) continue;
+
+    if(y > 180){
+      pdf.addPage();
+      y = 20;
+    }
+
+    pdf.text(areas[i].value,15,y);
+    pdf.text(services[i].value,80,y);
+    y += 8;
+  }
+
+  y += 10;
+
+  if(y > 160){
+    pdf.addPage();
+    y = 20;
+  }
+
+  pdf.setDrawColor(40,150,80);
+  pdf.roundedRect(12, y, 186, 32, 4, 4);
+  pdf.setFontSize(12);
+  pdf.text("Service Completed Successfully",105,y+10,{align:"center"});
+  pdf.setFontSize(10);
+  pdf.text("Thank you for trusting our professional team.",105,y+18,{align:"center"});
+  pdf.text("We appreciate your business and look forward to serving you again.",105,y+26,{align:"center"});
+
+  y += 42;
+
+  if(y > 160){
+    pdf.addPage();
+    y = 20;
+  }
+
+  pdf.addImage(canvas.toDataURL(),"PNG",15,y+12,90,40);
+  pdf.line(15,y+50,105,y+50);
+  pdf.text("CUSTOMER SIGNATURE",15,y+58);
+
+  pdf.line(10,280,200,280);
+  pdf.text("GMB Window & Bathub Company | +1 (646) 671-6849 | Gemibrand@gmail.com",105,287,{align:"center"});
+
+  const blob = pdf.output("blob");
+  const file = new File([blob], "GMB_Service_Report.pdf", { type: "application/pdf" });
+
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    await navigator.share({ files: [file] });
+  } else {
+    pdf.save("GMB_Service_Report.pdf");
+  }
+}
+
+function read(file){
+  return new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onload = e => resolve(e.target.result);
+    reader.readAsDataURL(file);
+  });
+}
+</script>
+
+</body>
+</html>
