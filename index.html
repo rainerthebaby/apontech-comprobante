@@ -180,59 +180,63 @@ async function generatePDF(){
   pdf.text(address.value,110,60,{maxWidth:85});
 
  /* PHOTOS*/
-  
-  let y = 86;
-  let x = 15;
-  let col = 0;
+ 
+	let y = 86;
+	let x = 15;
+	let col = 0;
 
-  pdf.setFontSize(13);
-  pdf.text("SERVICE EVIDENCE",10,78);
+	pdf.setFontSize(13);
+	pdf.text("EVIDENCES",10,78);
 
-  for(const file of images){
-    const img = await read(file);
-    pdf.addImage(img,"JPEG",x,y,80,55);
+for(const file of images){
+  const img = await read(file);
 
-    col++;
-    if(col === 2){
-      col = 0;
-      x = 15;
-      y += 60;
-    } else {
-      x = 110;
-    }
-
-    if(y > 220){
-      pdf.addPage();
-      y = 20;
-      x = 15;
-    }
-  }
-
- /* MSG */
-  
-  if(y > 185){
+  if(y > 220){
     pdf.addPage();
     y = 20;
-  }
-  pdf.setDrawColor(40,120,220);
-  pdf.setLineWidth(0.8);
-  pdf.roundedRect(12,y,186,32,4,4);
-  pdf.setFontSize(12);
-  pdf.text("✔Service Completed Successfully",105,y+12,{align:"center"});
-  pdf.setFontSize(10);
-  pdf.text("Thank you for choosing GMB Window & Bathub Company.",105,y+24,{align:"center"});
-
-  y += 42;
-
-  
-  /*SIGNATURE*/
-  
-  if(y > 160){
-    pdf.addPage();
-    y = 20;
+    x = 15;
+    col = 0;
   }
 
-  pdf.setFontSize(13);
+  pdf.addImage(img,"JPEG",x,y,80,55);
+
+  col++;
+  if(col === 2){
+    col = 0;
+    x = 15;
+    y += 60;
+  } else {
+    x = 110;
+  }
+}
+
+/* MSG */
+
+if(y > 180){
+  pdf.addPage();
+  y = 20;
+}
+
+pdf.setDrawColor(40,150,80);
+pdf.setLineWidth(0.8);
+pdf.roundedRect(12, y, 186, 32, 4, 4);
+
+pdf.setFontSize(12);
+pdf.text("Service Completed Successfully",105,y+10,{align:"center"});
+
+pdf.setFontSize(10);
+pdf.text("Thank you for trusting our professional team.",105,y+18,{align:"center"});
+pdf.text("We appreciate your business and look forward to serving you again.",105,y+26,{align:"center"});
+
+y += 42;
+
+/* Signature */
+if(y > 160){
+  pdf.addPage();
+  y = 20;
+}
+
+	pdf.setFontSize(13);
   pdf.addImage(canvas.toDataURL(),"PNG",15,y+12,90,40);
   pdf.line(15,y+50,105,y+50);
   pdf.setFontSize(11);
