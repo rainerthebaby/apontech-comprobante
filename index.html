@@ -87,10 +87,10 @@ button{
   <label>Service Photos</label>
 
   <input type="file" id="cameraInput" accept="image/*" capture="environment" hidden>
-  <button class="secondary" onclick="cameraInput.click()">Take Photos</button>
+  <button class="secondary" onclick="cameraInput.click()">📷Take Photos</button>
 
   <input type="file" id="galleryInput" accept="image/*" multiple hidden>
-  <button class="secondary" onclick="galleryInput.click()">Choose from Gallery</button>
+  <button class="secondary" onclick="galleryInput.click()">🖼️Choose from Gallery</button>
 
   <div class="small" id="photoCount">0 photos selected</div>
 </div>
@@ -208,7 +208,7 @@ async function generatePDF(){
 
   pdf.roundedRect(12,y,186,32,4,4);
   pdf.setFontSize(12);
-  pdf.text("Service Completed Successfully",105,y+12,{align:"center"});
+  pdf.text("✔Service Completed Successfully",105,y+12,{align:"center"});
   pdf.setFontSize(10);
   pdf.text("Thank you for choosing GMB Window & Bathub Company.",105,y+24,{align:"center"});
 
@@ -220,11 +220,11 @@ async function generatePDF(){
   }
 
   pdf.setFontSize(13);
-  pdf.text("CUSTOMER SIGNATURE",10,y);
+  pdf.text("📄CUSTOMER SIGNATURE",10,y);
   pdf.addImage(canvas.toDataURL(),"PNG",15,y+12,90,40);
 
   pdf.line(10,280,200,280);
-  pdf.text("GMB Window & Bathub Company | +1 (646) 671-6849 | Gemibrand@gmail.com",105,287,{align:"center"});
+  pdf.text("GMB Window & Bathub Company | +1 (646) 671-6849 | ✉️Gemibrand@gmail.com",105,287,{align:"center"});
 
   const blob = pdf.output("blob");
   const file = new File([blob], "GMB_Service_Report.pdf", { type: "application/pdf" });
