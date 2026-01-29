@@ -159,12 +159,17 @@ async function generatePDF(){
   const now = new Date().toLocaleString();
   const number = "GMB-" + Date.now().toString().slice(-6);
 
+  
+  /* ENCABEZADO */
+  
   pdf.addImage("logo.png","PNG",15,10,40,20);
   pdf.setFontSize(16);
   pdf.text("GMB WINDOW & BATHUB COMPANY",105,18,{align:"center"});
   pdf.setFontSize(12);
   pdf.text("SERVICE REPORT",105,26,{align:"center"});
   pdf.line(10,32,200,32);
+  
+/* DATE */
 
   pdf.rect(10,38,190,32);
   pdf.setFontSize(11);
@@ -174,6 +179,8 @@ async function generatePDF(){
   pdf.text("Address:",110,54);
   pdf.text(address.value,110,60,{maxWidth:85});
 
+ /* PHOTOS*/
+  
   let y = 86;
   let x = 15;
   let col = 0;
@@ -201,11 +208,14 @@ async function generatePDF(){
     }
   }
 
+ /* MSG */
+  
   if(y > 185){
     pdf.addPage();
     y = 20;
   }
-
+  pdf.setDrawColor(40,120,220);
+  pdf.setLineWidth(0.8);
   pdf.roundedRect(12,y,186,32,4,4);
   pdf.setFontSize(12);
   pdf.text("✔Service Completed Successfully",105,y+12,{align:"center"});
@@ -214,15 +224,23 @@ async function generatePDF(){
 
   y += 42;
 
+  
+  /*SIGNATURE*/
+  
   if(y > 160){
     pdf.addPage();
     y = 20;
   }
 
   pdf.setFontSize(13);
-  pdf.text("📄CUSTOMER SIGNATURE",10,y);
   pdf.addImage(canvas.toDataURL(),"PNG",15,y+12,90,40);
+  pdf.line(15,y+50,105,y+50);
+  pdf.setFontSize(11);
+  pdf.text("CUSTOMER SIGNATURE",15,y+58);
 
+  
+  /* PIE */
+  pdf.setFontSize(10);
   pdf.line(10,280,200,280);
   pdf.text("GMB Window & Bathub Company | +1 (646) 671-6849 | ✉️Gemibrand@gmail.com",105,287,{align:"center"});
 
