@@ -87,10 +87,10 @@ button{
   <label>Service Photos</label>
 
   <input type="file" id="cameraInput" accept="image/*" capture="environment" hidden>
-  <button class="secondary" onclick="cameraInput.click()">?? Take Photos</button>
+  <button class="secondary" onclick="cameraInput.click()">Take Photos</button>
 
   <input type="file" id="galleryInput" accept="image/*" multiple hidden>
-  <button class="secondary" onclick="galleryInput.click()">??? Choose from Gallery</button>
+  <button class="secondary" onclick="galleryInput.click()">Choose from Gallery</button>
 
   <div class="small" id="photoCount">0 photos selected</div>
 </div>
@@ -180,8 +180,9 @@ function addLine(){
     <select class="service">
       <option value="">Service</option>
       <option>Repair</option>
-      <option>Glass Work</option>
+      <option>Glass</option>
       <option>Installation</option>
+	  <option>Bathtub</option>
     </select>
 
     <button class="danger" onclick="this.parentElement.remove()">?</button>
