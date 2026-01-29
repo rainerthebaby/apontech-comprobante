@@ -200,20 +200,14 @@ for(const file of images){
 
   pdf.addImage(img,"JPEG",x,y,80,55);
 
-  if (col === 0) {
-    x = 110;
-    col = 1;
-  } else {
-    x = 15;
+  col++;
+  if(col === 2){
     col = 0;
+    x = 15;
     y += 60;
+  } else {
+    x = 110;
   }
-}
-
-/* ?? BAJAR SI QUEDÓ EN MEDIA COLUMNA */
-if (col === 1) {
-  y += 60;
-}
 }
 
 
