@@ -180,27 +180,27 @@ async function generatePDF(){
   pdf.text(address.value,110,60,{maxWidth:85});
 
  /* PHOTOS*/
- 
-	let y = 86;
-	let x = 15;
-	let col = 0;
+let y = 86;
+let x = 15;
+let col = 0;
 
-	pdf.setFontSize(13);
-	pdf.text("EVIDENCES",10,78);
+pdf.setFontSize(13);
+pdf.text("EVIDENCE",10,78);
 
-for(const file of images){
-  const img = await read(file);
+for (let i = 0; i < images.length; i++) {
 
-  if(y > 220){
+  const img = await read(images[i]);
+
+  if (y > 215) {
     pdf.addPage();
     y = 20;
     x = 15;
     col = 0;
   }
 
-  pdf.addImage(img,"JPEG",x,y,80,55);
+  pdf.addImage(img, "JPEG", x, y, 80, 55);
 
- if (col === 0) {
+  if (col === 0) {
     x = 110;
     col = 1;
   } else {
@@ -210,11 +210,9 @@ for(const file of images){
   }
 }
 
-/* ?? BAJAR SI QUEDÓ EN MEDIA COLUMNA */
-if (col === 1) {
-  y += 60;
-}
-}
+/* SI QUEDA FOTO EN MEDIA FILA */
+if (col === 1) y += 60;
+
 
 if(y > 180){
   pdf.addPage();
@@ -265,22 +263,10 @@ if(y > 160){
 }
 
 function read(file){
-  return new Promise(res=>{
-    const img = new Image();
-    const r = new FileReader();
-
-    r.onload = e => img.src = e.target.result;
-
-    img.onload = () => {
-      const c = document.createElement("canvas");
-      const scale = Math.min(900 / img.width, 1);
-      c.width = img.width * scale;
-      c.height = img.height * scale;
-      c.getContext("2d").drawImage(img,0,0,c.width,c.height);
-      res(c.toDataURL("image/jpeg",0.75));
-    };
-
-    r.readAsDataURL(file);
+  return new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onload = e => resolve(e.target.result);
+    reader.readAsDataURL(file);
   });
 }
 </script>
