@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>GMB | Digital Service Report</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -12,12 +13,13 @@ body{
   margin:0;
   padding:16px;
   font-family: system-ui, sans-serif;
-  background:#fff;
+  background:#ffffff;
   color:#0f172a;
 }
 .container{max-width:600px;margin:auto;}
 .logo{display:block;margin:0 auto 10px;max-width:180px;}
 h1{text-align:center;font-size:22px;margin-bottom:20px;}
+
 .card{
   background:#fff;
   border-radius:16px;
@@ -25,6 +27,7 @@ h1{text-align:center;font-size:22px;margin-bottom:20px;}
   margin-bottom:16px;
   box-shadow:0 8px 20px rgba(0,0,0,.08);
 }
+
 label{font-size:14px;font-weight:600;}
 input,textarea{
   width:100%;
@@ -32,14 +35,18 @@ input,textarea{
   padding:12px;
   border-radius:12px;
   border:1px solid #e5e7eb;
+  font-size:15px;
 }
+
 canvas{
   width:100%;
   height:180px;
   border-radius:12px;
   border:1px dashed #cbd5f5;
   background:#f8fafc;
+  touch-action:none;
 }
+
 button{
   width:100%;
   padding:14px;
@@ -48,11 +55,14 @@ button{
   background:linear-gradient(135deg,#2563eb,#22c55e);
   color:#fff;
   font-size:16px;
+  font-weight:600;
   margin-top:8px;
 }
+
 .secondary{background:#64748b;}
 .danger{background:#ef4444;}
-.small{text-align:center;font-size:12px;color:#64748b;}
+
+.small{text-align:center;font-size:12px;color:#64748b;margin-top:6px;}
 .footer{text-align:center;font-size:13px;color:#475569;margin-top:20px;}
 </style>
 </head>
@@ -66,38 +76,39 @@ button{
 <h1>Digital Service Report</h1>
 
 <div class="card">
-<label>Technician Name</label>
-<input id="driver">
+  <label>Technician Name</label>
+  <input id="driver">
 
-<label style="margin-top:12px;">Service Address</label>
-<textarea id="address" rows="3"></textarea>
+  <label style="margin-top:12px;">Service Address</label>
+  <textarea id="address" rows="3"></textarea>
 </div>
 
 <div class="card">
-<label>Service Photos</label>
+  <label>Service Photos</label>
 
-<input type="file" id="cameraInput" accept="image/*" capture="environment" hidden>
-<button class="secondary" onclick="cameraInput.click()">Take Photos</button>
+  <input type="file" id="cameraInput" accept="image/*" capture="environment" hidden>
+  <button class="secondary" onclick="cameraInput.click()">Take Photos</button>
 
-<input type="file" id="galleryInput" accept="image/*" multiple hidden>
-<button class="secondary" onclick="galleryInput.click()">Choose from Gallery</button>
+  <input type="file" id="galleryInput" accept="image/*" multiple hidden>
+  <button class="secondary" onclick="galleryInput.click()">Choose from Gallery</button>
 
-<div class="small" id="photoCount">0 photos selected</div>
+  <div class="small" id="photoCount">0 photos selected</div>
 </div>
 
 <div class="card">
-<label>Customer Signature</label>
-<canvas id="signature"></canvas>
-<button class="danger" onclick="clearSig()">Clear Signature</button>
+  <label>Customer Signature</label>
+  <canvas id="signature"></canvas>
+  <button class="danger" onclick="clearSig()">Clear Signature</button>
 </div>
 
 <div class="card">
-<button onclick="generatePDF()">Generate PDF</button>
+  <button onclick="generatePDF()">Generate PDF</button>
 </div>
 
 <div class="footer">
 GMB Window & Bathub Company<br>
-+1 (646) 671-6849 · Gemibrand@gmail.com
+Phone: +1 (646) 671-6849<br>
+Email: Gemibrand@gmail.com
 </div>
 
 </div>
@@ -105,144 +116,144 @@ GMB Window & Bathub Company<br>
 <script>
 const canvas = document.getElementById("signature");
 const ctx = canvas.getContext("2d");
-let drawing=false;
-let images=[];
+let drawing = false;
+let images = [];
 
 function resize(){
- canvas.width=canvas.offsetWidth;
- canvas.height=180;
+  canvas.width = canvas.offsetWidth;
+  canvas.height = 180;
 }
 resize();
-window.onresize=resize;
+window.onresize = resize;
 
-canvas.addEventListener("pointerdown",e=>{
- drawing=true;
- ctx.beginPath();
- ctx.moveTo(e.offsetX,e.offsetY);
+canvas.addEventListener("pointerdown", e => {
+  drawing = true;
+  ctx.beginPath();
+  ctx.moveTo(e.offsetX, e.offsetY);
 });
-canvas.addEventListener("pointermove",e=>{
- if(!drawing) return;
- ctx.lineWidth=2.5;
- ctx.lineCap="round";
- ctx.strokeStyle="#2563eb";
- ctx.lineTo(e.offsetX,e.offsetY);
- ctx.stroke();
+canvas.addEventListener("pointermove", e => {
+  if(!drawing) return;
+  ctx.lineWidth = 2.5;
+  ctx.lineCap = "round";
+  ctx.strokeStyle = "#2563eb";
+  ctx.lineTo(e.offsetX, e.offsetY);
+  ctx.stroke();
 });
-canvas.addEventListener("pointerup",()=>drawing=false);
+canvas.addEventListener("pointerup", () => drawing = false);
 
 function clearSig(){
- ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.clearRect(0,0,canvas.width,canvas.height);
 }
 
-cameraInput.onchange=galleryInput.onchange=e=>{
- for(let f of e.target.files) images.push(f);
- photoCount.innerText=`${images.length} photos selected`;
+cameraInput.onchange = galleryInput.onchange = e => {
+  for(let file of e.target.files){
+    images.push(file);
+  }
+  photoCount.innerText = `${images.length} photos selected`;
 };
 
 async function generatePDF(){
- const {jsPDF}=window.jspdf;
- const pdf=new jsPDF();
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF();
 
- const now=new Date().toLocaleString();
- const num="GMB-"+Date.now().toString().slice(-6);
+  const now = new Date().toLocaleString();
+  const number = "GMB-" + Date.now().toString().slice(-6);
 
- pdf.addImage("logo.png","PNG",15,10,40,20);
- pdf.setFontSize(16);
- pdf.text("GMB WINDOW & BATHUB COMPANY",105,18,{align:"center"});
- pdf.setFontSize(12);
- pdf.text("SERVICE REPORT",105,26,{align:"center"});
- pdf.line(10,32,200,32);
+  pdf.addImage("logo.png","PNG",15,10,40,20);
+  pdf.setFontSize(16);
+  pdf.text("GMB WINDOW & BATHUB COMPANY",105,18,{align:"center"});
+  pdf.setFontSize(12);
+  pdf.text("SERVICE REPORT",105,26,{align:"center"});
+  pdf.line(10,32,200,32);
 
- pdf.rect(10,38,190,32);
- pdf.setFontSize(11);
- pdf.text(`Report #: ${num}`,15,46);
- pdf.text(`Date: ${now}`,15,54);
- pdf.text(`Technician: ${driver.value}`,110,46);
- pdf.text("Address:",110,54);
- pdf.text(address.value,110,60,{maxWidth:85});
+  pdf.rect(10,38,190,32);
+  pdf.setFontSize(11);
+  pdf.text(`Report #: ${number}`,15,46);
+  pdf.text(`Date & Time: ${now}`,15,54);
+  pdf.text(`Technician: ${driver.value}`,110,46);
+  pdf.text("Address:",110,54);
+  pdf.text(address.value,110,60,{maxWidth:85});
 
- let y=90;
- let x=15;
- let col=0;
+  let y = 86;
+  let x = 15;
+  let col = 0;
 
- pdf.setFontSize(13);
- pdf.text("SERVICE EVIDENCE",10,82);
+  pdf.setFontSize(13);
+  pdf.text("SERVICE EVIDENCE",10,78);
 
- for(const file of images){
-   const img=await read(file);
+  for(const file of images){
+    const img = await read(file);
+    pdf.addImage(img,"JPEG",x,y,80,55);
 
-   if(y>220){
-     pdf.addPage();
-     y=20;
-     x=15;
-     col=0;
-   }
+    col++;
+    if(col === 2){
+      col = 0;
+      x = 15;
+      y += 60;
+    } else {
+      x = 110;
+    }
 
-   pdf.addImage(img,"JPEG",x,y,80,55);
+    if(y > 220){
+      pdf.addPage();
+      y = 20;
+      x = 15;
+    }
+  }
 
-   col++;
-   if(col===2){
-     col=0;
-     x=15;
-     y+=60;
-   }else{
-     x=110;
-   }
- }
+  if(y > 185){
+    pdf.addPage();
+    y = 20;
+  }
 
- // finish last row spacing
- if(col!==0) y+=60;
+  pdf.roundedRect(12,y,186,32,4,4);
+  pdf.setFontSize(12);
+  pdf.text("Service Completed Successfully",105,y+12,{align:"center"});
+  pdf.setFontSize(10);
+  pdf.text("Thank you for choosing GMB Window & Bathub Company.",105,y+24,{align:"center"});
 
- if(y>190){
-   pdf.addPage();
-   y=20;
- }
+  y += 42;
 
- pdf.roundedRect(12,y,186,32,4,4);
- pdf.setFontSize(12);
- pdf.text("Service Completed Successfully",105,y+14,{align:"center"});
- pdf.setFontSize(10);
- pdf.text("Thank you for trusting GMB Window & Bathub Company",105,y+24,{align:"center"});
+  if(y > 160){
+    pdf.addPage();
+    y = 20;
+  }
 
- y+=45;
+  pdf.setFontSize(13);
+  pdf.text("CUSTOMER SIGNATURE",10,y);
+  pdf.addImage(canvas.toDataURL(),"PNG",15,y+12,90,40);
 
- if(y>160){
-   pdf.addPage();
-   y=20;
- }
+  pdf.line(10,280,200,280);
+  pdf.text("GMB Window & Bathub Company | +1 (646) 671-6849 | Gemibrand@gmail.com",105,287,{align:"center"});
 
- pdf.setFontSize(13);
- pdf.text("CUSTOMER SIGNATURE",10,y);
- pdf.addImage(canvas.toDataURL(),"PNG",15,y+12,90,40);
+  const blob = pdf.output("blob");
+  const file = new File([blob], "GMB_Service_Report.pdf", { type: "application/pdf" });
 
- pdf.line(10,280,200,280);
- pdf.text("GMB Window & Bathub Company | +1 (646) 671-6849 | Gemibrand@gmail.com",105,287,{align:"center"});
-
- const blob=pdf.output("blob");
- const filePDF=new File([blob],"GMB_Service_Report.pdf",{type:"application/pdf"});
-
- if(navigator.canShare && navigator.canShare({files:[filePDF]})){
-   await navigator.share({files:[filePDF]});
- }else{
-   pdf.save("GMB_Service_Report.pdf");
- }
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    await navigator.share({ files: [file] });
+  } else {
+    pdf.save("GMB_Service_Report.pdf");
+  }
 }
 
 function read(file){
- return new Promise(res=>{
-  const img=new Image();
-  const r=new FileReader();
-  r.onload=e=>img.src=e.target.result;
-  img.onload=()=>{
-    const c=document.createElement("canvas");
-    const scale=Math.min(900/img.width,1);
-    c.width=img.width*scale;
-    c.height=img.height*scale;
-    c.getContext("2d").drawImage(img,0,0,c.width,c.height);
-    res(c.toDataURL("image/jpeg",0.75));
-  };
-  r.readAsDataURL(file);
- });
+  return new Promise(res=>{
+    const img = new Image();
+    const r = new FileReader();
+
+    r.onload = e => img.src = e.target.result;
+
+    img.onload = () => {
+      const c = document.createElement("canvas");
+      const scale = Math.min(900 / img.width, 1);
+      c.width = img.width * scale;
+      c.height = img.height * scale;
+      c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+      res(c.toDataURL("image/jpeg",0.75));
+    };
+
+    r.readAsDataURL(file);
+  });
 }
 </script>
 
