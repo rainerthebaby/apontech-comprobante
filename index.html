@@ -7,6 +7,7 @@
 <title>GMB | Digital Service Report</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
 body{
@@ -59,6 +60,8 @@ button{
   margin-top:8px;
 }
 
+button i{margin-right:8px;}
+
 .secondary{background:#64748b;}
 .danger{background:#ef4444;}
 
@@ -76,42 +79,55 @@ button{
 <h1>Digital Service Report</h1>
 
 <div class="card">
-  <label>Technician Name</label>
-  <input id="driver">
+  <label><i class="fa-solid fa-user"></i> Driver</label>
+<input id="driver">
 
-  <label style="margin-top:12px;">Service Address</label>
-  <textarea id="address" rows="3"></textarea>
+<label style="margin-top:12px;">
+  <i class="fa-solid fa-location-dot"></i> Service Address
+</label>
+<textarea id="address"></textarea>
+
 </div>
 
 <div class="card">
   <label>Service Photos</label>
 
   <input type="file" id="cameraInput" accept="image/*" capture="environment" hidden>
-  <button class="secondary" onclick="cameraInput.click()">Take Photos</button>
+
+
+  <button class="secondary" onclick="cameraInput.click()">
+    <i class="fa-solid fa-camera"></i> Take Photos
+  </button>
 
   <input type="file" id="galleryInput" accept="image/*" multiple hidden>
-  <button class="secondary" onclick="galleryInput.click()">Choose from Gallery</button>
+  <button class="secondary" onclick="galleryInput.click()">
+    <i class="fa-regular fa-image"></i> Choose from Gallery
+  </button>
 
   <div class="small" id="photoCount">0 photos selected</div>
 </div>
 
-<!-- ? DYNAMIC SERVICE LINES -->
 <div class="card">
   <label>Service Performed</label>
-
   <div id="serviceLines"></div>
 
-  <button class="secondary" onclick="addLine()">? Add Service Line</button>
+  <button class="secondary" onclick="addLine()">
+    <i class="fa-solid fa-plus"></i> Add Service Line
+  </button>
 </div>
 
 <div class="card">
   <label>Customer Signature</label>
   <canvas id="signature"></canvas>
-  <button class="danger" onclick="clearSig()">Clear Signature</button>
+  <button class="danger" onclick="clearSig()">
+    <i class="fa-solid fa-eraser"></i> Clear Signature
+  </button>
 </div>
 
 <div class="card">
-  <button onclick="generatePDF()">Generate PDF</button>
+  <button onclick="generatePDF()">
+    <i class="fa-solid fa-file-pdf"></i> Generate PDF
+  </button>
 </div>
 
 <div class="footer">
@@ -154,14 +170,23 @@ function clearSig(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
 }
 
-cameraInput.onchange = galleryInput.onchange = e => {
-  for(let file of e.target.files){
+cameraInput.onchange = e => {
+  if (!e.target.files.length) return;
+
+  images.push(e.target.files[0]);
+  photoCount.innerText = `${images.length} photos selected`;
+
+  cameraInput.value = ""; // permite tomar otra foto seguida
+};
+
+galleryInput.onchange = e => {
+  for (let file of e.target.files) {
     images.push(file);
   }
   photoCount.innerText = `${images.length} photos selected`;
 };
 
-/* ? ADD SERVICE LINE */
+
 function addLine(){
   const row = document.createElement("div");
   row.style.display = "flex";
@@ -182,10 +207,12 @@ function addLine(){
       <option>Repair</option>
       <option>Glass</option>
       <option>Installation</option>
-	  <option>Bathtub</option>
+      <option>Bathtub</option>
     </select>
 
-    <button class="danger" onclick="this.parentElement.remove()">?</button>
+    <button class="danger" onclick="this.parentElement.remove()">
+      <i class="fa-solid fa-trash"></i>
+    </button>
   `;
 
   serviceLines.appendChild(row);
@@ -221,6 +248,7 @@ async function generatePDF(){
   pdf.text("EVIDENCE",10,78);
 
   for (let i = 0; i < images.length; i++) {
+
     const img = await read(images[i]);
 
     if (y > 215) {
@@ -242,24 +270,23 @@ async function generatePDF(){
     }
   }
 
-  if (col === 1) y += 60;
+  if (col === 1) y += 80;
+  y += 10; 
 
   if(y > 180){
     pdf.addPage();
     y = 20;
   }
 
-  /* ? SERVICE TABLE */
   pdf.setFontSize(13);
   pdf.text("SERVICE DETAILS",10,y);
-  y += 8;
+  y += 6;
 
   pdf.setFontSize(11);
-  pdf.text("Area",15,y);
-  pdf.text("Service Performed",80,y);
-  y += 5;
-  pdf.line(15,y,190,y);
-  y += 6;
+  pdf.rect(10,y,190,8);
+  pdf.text("Area",15,y+6);
+  pdf.text("Service Performed",100,y+6);
+  y += 8;
 
   const areas = document.querySelectorAll(".area");
   const services = document.querySelectorAll(".service");
@@ -272,12 +299,13 @@ async function generatePDF(){
       y = 20;
     }
 
-    pdf.text(areas[i].value,15,y);
-    pdf.text(services[i].value,80,y);
+    pdf.rect(10,y,190,8);
+    pdf.text(areas[i].value,15,y+6);
+    pdf.text(services[i].value,100,y+6);
     y += 8;
   }
 
-  y += 10;
+  y += 12;
 
   if(y > 160){
     pdf.addPage();
