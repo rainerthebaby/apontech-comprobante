@@ -85,7 +85,7 @@ button i{margin-right:8px;}
 
 <label style="margin-top:12px;">
    
-  <i class="fa-solid fa-location-dot" style="color:#ef4444"></i>Service Address
+  <i class="fa-solid fa-location-dot" style="color:#ef4444"></i> Service Address
 </label>
 <textarea id="address"></textarea>
 
@@ -216,6 +216,7 @@ galleryInput.onchange = e => {
 
 
 function addLine(){
+
   const row = document.createElement("div");
   row.style.display = "flex";
   row.style.gap = "8px";
@@ -238,6 +239,9 @@ function addLine(){
       <option>Bathtub</option>
     </select>
 
+	 <input type="number" class="qty" placeholder="Qty" min="1" value="1" 
+      style="width:70px;padding:10px;border-radius:10px;border:1px solid #e5e7eb;">
+	
     <button class="danger" onclick="this.parentElement.remove()">
       <i class="fa-solid fa-trash"></i>
     </button>
@@ -247,6 +251,7 @@ function addLine(){
 }
 
 async function generatePDF(){
+
   const { jsPDF } = window.jspdf;
   const pdf = new jsPDF();
 
@@ -286,7 +291,7 @@ async function generatePDF(){
       col = 0;
     }
 
-    pdf.addImage(img, "JPEG", x, y, 80, 55);
+    pdf.addImage(img, "PNG", x, y, 80, 55);
 
     if (col === 0) {
       x = 110;
@@ -298,28 +303,40 @@ async function generatePDF(){
     }
   }
 
-  if (col === 1) y += 80;
-  y += 10; 
+  if (col === 1) y += 70;
+  y += 10;
 
   if(y > 180){
     pdf.addPage();
     y = 20;
   }
 
+  /* ===== SERVICE TABLE ===== */
+
   pdf.setFontSize(13);
   pdf.text("SERVICE DETAILS",10,y);
-  y += 6;
+  y += 10;
 
+  pdf.setFillColor(37,99,235);
+  pdf.rect(12,y-7,186,9,"F");
+
+  pdf.setTextColor(255,255,255);
   pdf.setFontSize(11);
-  pdf.rect(10,y,190,8);
-  pdf.text("Area",15,y+6);
-  pdf.text("Service Performed",100,y+6);
+  pdf.text("Area",15,y);
+  pdf.text("Service",85,y);
+  pdf.text("Qty",170,y);
+
   y += 8;
+  pdf.setTextColor(0,0,0);
 
   const areas = document.querySelectorAll(".area");
   const services = document.querySelectorAll(".service");
+  const qtys = document.querySelectorAll(".qty");
+
+  let stripe = false;
 
   for(let i=0;i<areas.length;i++){
+
     if(!areas[i].value || !services[i].value) continue;
 
     if(y > 180){
@@ -327,28 +344,41 @@ async function generatePDF(){
       y = 20;
     }
 
-    pdf.rect(10,y,190,8);
-    pdf.text(areas[i].value,15,y+6);
-    pdf.text(services[i].value,100,y+6);
-    y += 8;
+    if(stripe){
+      pdf.setFillColor(245,247,250);
+      pdf.rect(12,y-6,186,9,"F");
+    }
+
+    pdf.setDrawColor(220,220,220);
+    pdf.rect(12,y-6,186,9);
+
+    pdf.text(areas[i].value,15,y);
+    pdf.text(services[i].value,85,y);
+    pdf.text(qtys[i].value || "1",170,y);
+
+    stripe = !stripe;
+    y += 10;
   }
 
-  y += 12;
+  y += 14;
 
   if(y > 160){
     pdf.addPage();
     y = 20;
   }
 
+  /* ===== COMPLETED BOX ===== */
+
   pdf.setFillColor(220,245,230);
   pdf.setDrawColor(40,150,80);
   pdf.roundedRect(12, y, 186, 32, 4, 4, "F");
+
   pdf.setFontSize(12);
   pdf.text("Service Completed Successfully",105,y+10,{align:"center"});
   pdf.setFontSize(10);
   pdf.text("Thank you for trusting our professional team.",105,y+18,{align:"center"});
-  pdf.text("We appreciate your business and look forward to serving you again. GMB COMPANY",105,y+26,{align:"center"});
-  
+  pdf.text("We appreciate your business and look forward to serving you again.",105,y+26,{align:"center"});
+
   y += 42;
 
   if(y > 160){
@@ -361,7 +391,10 @@ async function generatePDF(){
   pdf.text("CUSTOMER SIGNATURE",15,y+58);
 
   pdf.line(10,280,200,280);
-  pdf.text("GMB Window & Bathub Company | +1 (646) 671-6849 | Gemibrand@gmail.com",105,287,{align:"center"});
+  pdf.text(
+    "GMB Window & Bathub Company | +1 (646) 671-6849 | Gemibrand@gmail.com",
+    105,287,{align:"center"}
+  );
 
   const blob = pdf.output("blob");
   const file = new File([blob], "GMB_Service_Report.pdf", { type: "application/pdf" });
@@ -372,6 +405,7 @@ async function generatePDF(){
     pdf.save("GMB_Service_Report.pdf");
   }
 }
+
 
 function read(file){
   return new Promise(resolve => {
