@@ -273,92 +273,100 @@ async function generatePDF(){
   pdf.text("Address:",110,54);
   pdf.text(address.value,110,60,{maxWidth:85});
 
-  let y = 86;
-  let x = 15;
-  let col = 0;
+ let y = 86;
 
-  pdf.setFontSize(13);
-  pdf.text("EVIDENCE",10,78);
+/* ===== SERVICE TABLE FIRST ===== */
 
-  for (let i = 0; i < images.length; i++) {
+pdf.setFontSize(13);
+pdf.text("SERVICE DETAILS",10,y);
+y += 10;
 
-    const img = await read(images[i]);
+pdf.setFillColor(37,99,235);
+pdf.rect(12,y-7,186,9,"F");
 
-    if (y > 215) {
-      pdf.addPage();
-      y = 20;
-      x = 15;
-      col = 0;
-    }
+pdf.setTextColor(255,255,255);
+pdf.setFontSize(11);
+pdf.text("Area",15,y);
+pdf.text("Service",85,y);
+pdf.text("Qty",170,y);
 
-    pdf.addImage(img, "PNG", x, y, 80, 55);
+y += 8;
+pdf.setTextColor(0,0,0);
 
-    if (col === 0) {
-      x = 110;
-      col = 1;
-    } else {
-      x = 15;
-      col = 0;
-      y += 60;
-    }
-  }
+const areas = document.querySelectorAll(".area");
+const services = document.querySelectorAll(".service");
+const qtys = document.querySelectorAll(".qty");
 
-  if (col === 1) y += 70;
-  y += 10;
+let stripe = false;
+
+for(let i=0;i<areas.length;i++){
+
+  if(!areas[i].value || !services[i].value) continue;
 
   if(y > 180){
     pdf.addPage();
     y = 20;
   }
 
-  /* ===== SERVICE TABLE ===== */
-
-  pdf.setFontSize(13);
-  pdf.text("SERVICE DETAILS",10,y);
-  y += 10;
-
-  pdf.setFillColor(37,99,235);
-  pdf.rect(12,y-7,186,9,"F");
-
-  pdf.setTextColor(255,255,255);
-  pdf.setFontSize(11);
-  pdf.text("Area",15,y);
-  pdf.text("Service",85,y);
-  pdf.text("Qty",170,y);
-
-  y += 8;
-  pdf.setTextColor(0,0,0);
-
-  const areas = document.querySelectorAll(".area");
-  const services = document.querySelectorAll(".service");
-  const qtys = document.querySelectorAll(".qty");
-
-  let stripe = false;
-
-  for(let i=0;i<areas.length;i++){
-
-    if(!areas[i].value || !services[i].value) continue;
-
-    if(y > 180){
-      pdf.addPage();
-      y = 20;
-    }
-
-    if(stripe){
-      pdf.setFillColor(245,247,250);
-      pdf.rect(12,y-6,186,9,"F");
-    }
-
-    pdf.setDrawColor(220,220,220);
-    pdf.rect(12,y-6,186,9);
-
-    pdf.text(areas[i].value,15,y);
-    pdf.text(services[i].value,85,y);
-    pdf.text(qtys[i].value || "1",170,y);
-
-    stripe = !stripe;
-    y += 10;
+  if(stripe){
+    pdf.setFillColor(245,247,250);
+    pdf.rect(12,y-6,186,9,"F");
   }
+
+  pdf.setDrawColor(220,220,220);
+  pdf.rect(12,y-6,186,9);
+
+  pdf.text(areas[i].value,15,y);
+  pdf.text(services[i].value,85,y);
+  pdf.text(qtys[i].value || "1",170,y);
+
+  stripe = !stripe;
+  y += 10;
+}
+
+y += 15;
+
+if(y > 180){
+  pdf.addPage();
+  y = 20;
+}
+
+/* ===== PHOTOS AFTER TABLE ===== */
+
+pdf.setFontSize(13);
+pdf.text("EVIDENCE",10,y);
+y += 6;
+
+let x = 15;
+let col = 0;
+
+for (let i = 0; i < images.length; i++) {
+
+  const img = await read(images[i]);
+
+  if (y > 215) {
+    pdf.addPage();
+    y = 20;
+    x = 15;
+    col = 0;
+  }
+
+  pdf.addImage(img, "PNG", x, y, 80, 55);
+
+  if (col === 0) {
+    x = 110;
+    col = 1;
+  } else {
+    x = 15;
+    col = 0;
+    y += 60;
+  }
+}
+
+if (col === 1) y += 70;
+y += 10;
+
+  
 
   y += 14;
 
